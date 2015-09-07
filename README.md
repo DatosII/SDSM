@@ -1,2 +1,0 @@
-# SDSM
-Primer proyecto

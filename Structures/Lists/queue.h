@@ -1,7 +1,7 @@
 #ifndef QUEUE
 #define QUEUE
 
-#include "Nodes/node_ll.h"
+#include "Structures/Nodes/node_ll.h"
 #include <iostream>
 
 /**

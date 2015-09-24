@@ -2,7 +2,7 @@
 #define DLINKEDLIST
 
 
-#include "Nodes/node_dll.h"
+#include "Structures/Nodes/node_dll.h"
 #include <iostream>
 
 #define JUMP "\n"

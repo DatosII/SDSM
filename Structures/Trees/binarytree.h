@@ -1,8 +1,8 @@
 #ifndef BINARYTREE
 #define BINARYTREE
 
-#include "Nodes/node_bst.h"
-#include "Lists/queue.h"
+#include "Structures/Nodes/node_bst.h"
+#include "Structures/Lists/queue.h"
 #include <iostream>
 
 #define JUMP "\n"
@@ -43,8 +43,6 @@ public:
 
     int getTotalNodes(); //Método que indica  la cantidad total de nodos
     void print(); //Método para imprimir los datos del árbol
-
-
 };
 
 #endif // BINARYTREE

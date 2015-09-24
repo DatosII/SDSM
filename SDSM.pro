@@ -17,7 +17,10 @@ TEMPLATE = app
 
 SOURCES += main.cpp \
     Data_Access/xmlparser.cpp \
-    Data_Access/pugixml/pugixml.cpp
+    Data_Access/pugixml/pugixml.cpp \
+    SDSMMemoryNode/SDSMMemoryNode.cpp \
+    Structures/Lists/memorylist.cpp \
+    Structures/Nodes/memorynode.cpp
 
 HEADERS += \
     SDSMMemoryNode/SDSMMemoryNode.h \
@@ -30,4 +33,8 @@ HEADERS += \
     Structures/Nodes/node_ll.h \
     Structures/Nodes/node_dll.h \
     Structures/Nodes/node_bst.h \
-    Structures/Trees/binarytree.h
+    Structures/Trees/binarytree.h \
+    Structures/Lists/memorylist.h \
+    Structures/Nodes/memorynode.h
+
+CONFIG += c++11

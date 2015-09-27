@@ -22,12 +22,12 @@
             MemoryNode* getHead(); //Método para obtener el head
             unsigned int getTotalNodes(); //Método para obtener la cantidad de nodos dentro de la lista
             unsigned int* insert(MemoryNode *pNode); //Método para insertar un dato
-            void remove(); //Método para eliminar un dato
+            void remove(MemoryNode *pNode); //Método para eliminar un dato
             MemoryNode* find(std::string pID, unsigned int pMemAddress); //Método para buscar un dato
             void print(); //Método para imprimir toda la lista
 
         private:
-            unsigned int* insertAux(MemoryNode *pNode); //Método auxiliar para insertar un dato
+            unsigned int* insertAux(MemoryNode *pNode, unsigned int *pArray); //Método auxiliar para insertar un dato
 
             MemoryNode *_head;
             MemoryNode *_tail;

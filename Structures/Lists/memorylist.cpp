@@ -64,12 +64,14 @@ unsigned int MemoryList::getTotalNodes(){
  *          *Segundo valor: dirección de memoria del espacio reservado
  */
 unsigned int *MemoryList::insert(MemoryNode *pNode){
+    unsigned int *values = new unsigned int[2];
     //No se a reservado ningun espacio
     if(_head == 0){
         _head = _tail = pNode;
         pNode->setInitMem(_initMem);
         _totalNodes++;
-        unsigned int values[] = {0,_initMem};
+        values[0] = 0;
+        values[1] = _initMem;
         return values;
     }
     else{
@@ -80,12 +82,13 @@ unsigned int *MemoryList::insert(MemoryNode *pNode){
             pNode->setNext(_head);
             _head = pNode;
             _totalNodes++;
-            unsigned int values[] = {0,_initMem};
+            values[0] = 0;
+            values[1] = _initMem;
             return values;
         }
         //Se debe buscar espacio, se llama el método auxiliar
         else{
-            return this->insertAux(pNode);
+            return this->insertAux(pNode, values);
         }
     }
 }
@@ -120,14 +123,15 @@ unsigned int *MemoryList::insert(MemoryNode *pNode){
  *          *Primer valor: 0 si se reservo espacio, 1 si no hay espacio
  *          *Segundo valor: dirección de memoria del espacio reservado
  */
-unsigned int *MemoryList::insertAux(MemoryNode *pNode){
+unsigned int *MemoryList::insertAux(MemoryNode *pNode, unsigned int *pArray){
     MemoryNode *current = _head;
     MemoryNode *next = _head->getNext();
     unsigned int prevEndMem = (current->getInitMem()+current->getAmountMem());
-    unsigned int nextInitMem = next->getInitMem();
+
 
     //Se comprueba si hay espacios de memoria libres entre los nodos
     while(next != 0){
+        unsigned int nextInitMem = next->getInitMem();
         if((nextInitMem - prevEndMem) >= pNode->getAmountMem()){
             break;
         }
@@ -147,8 +151,9 @@ unsigned int *MemoryList::insertAux(MemoryNode *pNode){
         pNode->setNext(next);
         next->setPrev(pNode);
         _totalNodes++;
-        unsigned int values[] = {0, pNode->getInitMem()};
-        return values;
+        pArray[0] = 0;
+        pArray[1] = pNode->getInitMem();
+        return pArray;
     }
 
     //No se encontro ningun espacio vacio entre nodos
@@ -164,15 +169,50 @@ unsigned int *MemoryList::insertAux(MemoryNode *pNode){
             _tail->setNext(pNode);
             _tail = pNode;
             _totalNodes++;
-            unsigned int values[] = {0,pNode->getInitMem()};
-            return values;
+            pArray[0] = 0;
+            pArray[1] = pNode->getInitMem();
+            return pArray;
         }
 
         //No hay mas espacio para reservar
         else{
-            unsigned int values[] = {1,0};
-            return values;
+            pArray[0] = 1;
+            pArray[1] = 0;
+            return pArray;
         }
+    }
+}
+
+
+
+/**
+ * @brief Método que elimina un nodo de la lista
+ *
+ * Los nodos de la lista se eliminan cuando se libera toda la memoria que
+ * se le fue asignada en un momento
+ *
+ * @param pNode Nodo que se quiere eliminar
+ *
+ */
+void MemoryList::remove(MemoryNode *pNode){
+    if(_totalNodes == 0) return;
+
+    if(_head == pNode){
+        pNode->getNext()->setPrev(0);
+        _head = pNode->getNext();
+        delete pNode;
+    }
+
+    else if(_tail = pNode){
+        pNode->getPrev()->setNext(0);
+        _tail = pNode->getPrev();
+        delete pNode;
+    }
+
+    else{
+        pNode->getPrev()->setNext(pNode->getNext());
+        pNode->getNext()->setPrev(pNode->getPrev());
+        delete pNode;
     }
 }
 

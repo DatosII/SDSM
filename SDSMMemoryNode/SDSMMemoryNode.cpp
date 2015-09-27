@@ -10,12 +10,12 @@
  * de los clientes y los espacios de memoria que estos almacenan
  *
  * @param pMemory Cantidad de memoria a compartir
- * @param pUnit Unidad de la memoria a compartir (Gigabytes|Megabytes)
+ * @param pUnit Unidad de la memoria a compartir (Gb|Mb)
  * @param pPort Puerto por el cual se conectaran los clientes
  * @param pStatePort Puerto de estado por el cual se muestra la información de memoria
  */
 SDSMMemoryNode::SDSMMemoryNode(const int pMemory, const char pUnit, const int pPort, const int pStatePort){
-    _totalMem = (pUnit == 'G')?(pMemory*1024*1024):(pMemory*1024);
+    _totalMem = (pUnit == 'G')?(pMemory*FACTOR*FACTOR):(pMemory*FACTOR);
     _port = pPort;
     _statePort = pStatePort;
     _initPointer = calloc(1, _totalMem);
@@ -26,23 +26,25 @@ SDSMMemoryNode::SDSMMemoryNode(const int pMemory, const char pUnit, const int pP
 }
 
 
-unsigned char *SDSMMemoryNode::parser(char pBuffer[]){
-    char *tmp = strtok(pBuffer, ":");
+
+unsigned char *SDSMMemoryNode::parser(unsigned char *pBuffer){
+
+    char *tmp = strtok((char*)pBuffer, SPLIT);
     std::string method = (std::string)tmp;
+    std::string byteStream = (std::string)strtok(NULL, SPLIT);
+    unsigned char *_bytes = this->getBytes(byteStream);
 
-    std::string byteStream = (std::string)strtok(NULL, ":");
-    unsigned int *_bytes = this->getBytes(byteStream);
-
-    if(method == "d_calloc"){
-        return this->d_calloc(this->bytesToInt(_bytes, 0, 3));
+    if(method == D_CALLOC){
+        return this->d_calloc(this->bytesToInt(_bytes, 0, 3)); //SE DEBE HACER DELETE DEL VALOR DE RETORNO
     }
-    else if (method == "d_free"){}
-    else if (method == "d_set"){}
-    else if (method == "d_get"){}
-    else if (method == "d_status"){}
+    else if (method == D_FREE){
 
-
+    }
+    else if (method == D_SET){}
+    else if (method == D_GET){}
+    else if (method == D_STATUS){}
 }
+
 
 
 /**
@@ -58,21 +60,22 @@ unsigned char *SDSMMemoryNode::parser(char pBuffer[]){
  *
  * @return Arreglo de ints con los bytes
  */
-unsigned int* SDSMMemoryNode::getBytes(const std::string pBytes){
-    unsigned int _bytes[pBytes.length()/2];
+unsigned char* SDSMMemoryNode::getBytes(std::string pBytes){
+    unsigned char *_bytes = new unsigned char[pBytes.length()/2];
 
     int posArray = 0;
-    for(int i = 0; i < pBytes.length(); i+=2){
+    for(unsigned int i = 0; i < pBytes.length(); i+=2){
         std::string stringByte = pBytes.substr(i, 2);
         char *charByte = (char*)&stringByte[0u];
         unsigned int byte;
         sscanf(charByte, "%x", &byte);
-        _bytes[posArray] = byte;
+        _bytes[posArray] = (unsigned char)byte;
         posArray++;
     }
 
     return _bytes;
 }
+
 
 
 /**
@@ -85,7 +88,7 @@ unsigned int* SDSMMemoryNode::getBytes(const std::string pBytes){
  * @return Int formado
  *
  */
-unsigned int SDSMMemoryNode::bytesToInt(unsigned int* byteArray, const int& pStartIndex, const int& pEndIndex){
+unsigned int SDSMMemoryNode::bytesToInt(unsigned char* byteArray, const int& pStartIndex, const int& pEndIndex){
 
     unsigned int newInt = 0;
     int j = 0;
@@ -94,6 +97,7 @@ unsigned int SDSMMemoryNode::bytesToInt(unsigned int* byteArray, const int& pSta
         ++j;
     }
 
+    delete byteArray;
     return  newInt;
 }
 
@@ -106,13 +110,45 @@ unsigned int SDSMMemoryNode::bytesToInt(unsigned int* byteArray, const int& pSta
  *
  * @return Puntero a un arreglo con los bytes del numero
  */
-unsigned int *SDSMMemoryNode::intToBytes(unsigned int &pInt){
-    unsigned int byte0 = pInt >> 24 & 0xFF;
-    unsigned int byte1 = pInt >> 16 & 0xFF;
-    unsigned int byte2 = pInt >> 8 & 0xFF;
-    unsigned int byte3 = pInt & 0xFF;
+unsigned char *SDSMMemoryNode::intToBytes(unsigned int &pInt){
+    unsigned char *bytes = new unsigned char[MAX_INDEX];
 
-    unsigned int bytes[] = {byte0, byte1, byte2, byte3};
+    for(int index = ZERO, byte = LAST_BYTE; index < MAX_INDEX, byte >= ZERO; index++, byte--){
+        bytes[index] = pInt >> (BITS*byte) & 0xFF;
+    }
+    return bytes;
+}
+
+
+
+/**
+ * @brief Método que convierte dos bytes a unsigned short
+ *
+ * @param byteArray Arreglo que contiene los bytes
+ * @param pStartIndex Indice donde comienzan los bytes
+ * @param pEndIndex Indice donde terminan los bytes
+ *
+ * @return Short formado con los bytes
+ */
+unsigned short SDSMMemoryNode::bytesToShort(unsigned char *byteArray, const int &pStartIndex, const int &pEndIndex){
+
+    return (unsigned short) (((byteArray[pStartIndex] << 8)) | ((byteArray[pEndIndex] & 0xff)));
+}
+
+
+/**
+ * @brief Método que convierte un short a su representación en bytes
+ *
+ * @param pShort Short al que quieren obtenerse los bytes
+ *
+ * @return Arreglo con los bytes
+ */
+unsigned char *SDSMMemoryNode::shortToBytes(unsigned short pShort){
+    unsigned char bytes[1];
+
+    bytes[0] = (pShort & 0xFF00) >> 8;
+    bytes[1] = pShort & 0x00FF;
+
     return bytes;
 }
 
@@ -138,55 +174,104 @@ unsigned int *SDSMMemoryNode::intToBytes(unsigned int &pInt){
  * @return Arreglo de tipo char con los bytes de respuesta
  */
 unsigned char *SDSMMemoryNode::d_calloc(unsigned int pSize){
+
+    std::cout << "ENTRE " << "\n"; //"#######################################################"
+
     MemoryNode *newNode = new MemoryNode("ID");
     newNode->setFileDescriptor(1);
     newNode->setAmountMem(pSize);
     unsigned int *result = _memoryList->insert(newNode);
 
-    if(result[0] != 1){
-        unsigned int *bytes = this->intToBytes(result[1]);
+    unsigned char *message = new unsigned char[5];
 
-        unsigned char message[] = {
-            (unsigned char)result[0],
-            (unsigned char)bytes[0],
-            (unsigned char)bytes[1],
-            (unsigned char)bytes[2],
-            (unsigned char)bytes[3],
-        };
-        return message;
+
+   // if(result[0] == 1) delete newNode;
+
+    std::cout << result[1] << "\n";
+    unsigned char *bytes = this->intToBytes(result[1]);
+
+    message[0] = (unsigned char)result[0];
+    for(int i=0; i<(sizeof(bytes)); i++){
+        message[i+1] = bytes[i];
     }
-    else{
-        delete newNode;
-        unsigned char message[] = {(unsigned char)result[0], 0, 0 ,0, 0};
-        return message;
-    }
+
+    delete result;
+    delete bytes;
+    return message;
+
+
+//    if(result[0] != 1){
+//        unsigned char *bytes = this->intToBytes(result[1]);
+
+//        message[0] = (unsigned char)result[0];
+//        for(int i=0; i<(sizeof(bytes)/2); i++){
+//            message[i+1] = bytes[i];
+//        }
+
+//        delete result;
+//        return message;
+//    }
+//    else{
+//        delete newNode;
+//         message[0] = (unsigned)
+//         {(unsigned char)result[0], 0, 0 ,0, 0};
+//        return message;
+//    }
 }
+
 
 
 /**
  * @brief Método que libera la memoria
  *
- * Libera la memoria especificada por el d_pointer_size, creando un puntero tipo
- * unsigned char que apunta al lugar de memoria del d_pointer_size; con este puntero
- * se eliminan los datos seteando los bytes en 0. Se aumenta el puntero original del
- * nodo en caso que no se quiera borrar todos los bytes asignados.
+ * Se busca en la lista si el cliente que solicita la liberacion de memoria, tiene
+ * reservado el espacio que desea liberar.
+ * Si valor de retorno de la busqueda del nodo
+ * es diferente de NULL, significa que se encontro el nodo, por lo que se libera la memoria,
+ * luego se comprueba si la cantidad de bytes a liberar es igual a la cantidad de memoria
+ * reservada, si lo es significa que se debe borrar el nodo.
  *
  * @param pPointer Puntero que indica la ubicación y la cantidad de memoria a eliminar
  *
- * @return
+ * @return Char con un 0 si se la operacion se realizo correctamente,
+ *         un 2 si se intento acceder a un espacio de memoria no permitido o si la
+ *         ocurrio algun error durante el método
  */
-char *SDSMMemoryNode::d_free(d_pointer_size pPointer){
-    unsigned char *tmp = (unsigned char*)pPointer._d_pointer._memory;
-    for(int i = 0; i<pPointer._bytes; i++){
-        *tmp = 0;
-        tmp++;
-        pPointer._d_pointer._memory+=1;
+unsigned char SDSMMemoryNode::d_free(d_pointer_size pPointer){
+    MemoryNode *node = _memoryList->find("ID", pPointer._d_pointer._memory);
+
+    //La memoria a liberar a sido reservada previamente por el mismo cliente
+    if(node != NULL){
+        unsigned char *tmp = (unsigned char*)pPointer._d_pointer._memory;
+        for(int i = 0; i<pPointer._bytes; i++){// Se recorre la memoria borrando los bytes
+            *tmp = 0;
+            tmp++;
+            node->setInitMem(node->getInitMem()+1);
+        }
+        //Si el espacio a borrar es igual al total de memoria reservada, se elimina el nodo
+        if(node->getAmountMem() == pPointer._bytes){
+            _memoryList->remove(node);
+        }
+        unsigned char message = 0;
+        return message;
     }
-    //Si el espacio a borrar es igual al espacio total del nodo
-    if(pPointer._bytes == pPointer._d_pointer._memory){
-        //ELIMINAR EL DATO
+
+    //La memoria no a sido reservada o pertenece a otro cliente
+    else{
+        unsigned char message = 2;
+        return message;
     }
+
+
+
+
+
+
+
+
+
 }
+
 
 
 char *SDSMMemoryNode::d_get(d_pointer_size pPointer){
@@ -194,9 +279,11 @@ char *SDSMMemoryNode::d_get(d_pointer_size pPointer){
 }
 
 
+
 char *SDSMMemoryNode::d_set(d_pointer_size pPointer, std::string pByteStream){
 
 }
+
 
 
 char *SDSMMemoryNode::d_status(){

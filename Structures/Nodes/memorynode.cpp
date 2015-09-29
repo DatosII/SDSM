@@ -161,8 +161,8 @@ std::string MemoryNode::getID(){
  * Asigna 0 (NULL) a los punteros al nodo anterior y siguiente
  */
 MemoryNode::~MemoryNode(){
-    _prev = 0;
-    _next = 0;
+	_prev = 0;
+	_next = 0;
 }
 
 

@@ -20,6 +20,7 @@
             MemoryList(unsigned int pInitMem, unsigned int pTotalMem); //Constructor
             ~MemoryList(); //Destructor
             MemoryNode* getHead(); //Método para obtener el head
+			MemoryNode* getTail(); //Método para obtener el tail
             unsigned int getTotalNodes(); //Método para obtener la cantidad de nodos dentro de la lista
             unsigned int* insert(MemoryNode *pNode); //Método para insertar un dato
             void remove(MemoryNode *pNode); //Método para eliminar un dato

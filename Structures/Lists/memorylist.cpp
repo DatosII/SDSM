@@ -28,7 +28,17 @@ MemoryList::MemoryList(unsigned int pInitMem, unsigned int pTotalMem){
  * @return Head de la lista
  */
 MemoryNode *MemoryList::getHead(){
-    return _head;
+	return _head;
+}
+
+
+/**
+ * @brief Método que retorna el tail de la lista
+ *
+ * @return Tail de la lista
+ */
+MemoryNode *MemoryList::getTail(){
+	return _tail;
 }
 
 
@@ -68,22 +78,22 @@ unsigned int *MemoryList::insert(MemoryNode *pNode){
     //No se a reservado ningun espacio
     if(_head == 0){
         _head = _tail = pNode;
-        pNode->setInitMem(_initMem);
+		pNode->setInitMem(0);				// ########## _initMen ===> 0
         _totalNodes++;
         values[0] = 0;
-        values[1] = _initMem;
+		values[1] = 0;
         return values;
     }
     else{
         //Se comprueba espacio entre la primera reserva y el inicio de la memoria
-        if( (_head->getInitMem()-_initMem) >= pNode->getAmountMem()){
-            pNode->setInitMem(_initMem);
+		if( ((_head->getInitMem()+_initMem)-_initMem) >= pNode->getAmountMem()){
+			pNode->setInitMem(0);			// ########## _initMen ===> 0
             _head->setPrev(pNode);
             pNode->setNext(_head);
             _head = pNode;
             _totalNodes++;
             values[0] = 0;
-            values[1] = _initMem;
+			values[1] = pNode->getInitMem();			// ########## _initMen ===> pNode->getInitMem();
             return values;
         }
         //Se debe buscar espacio, se llama el método auxiliar
@@ -127,17 +137,17 @@ unsigned int *MemoryList::insertAux(MemoryNode *pNode, unsigned int *pArray){
     MemoryNode *current = _head;
     MemoryNode *next = _head->getNext();
     unsigned int prevEndMem = (current->getInitMem()+current->getAmountMem());
-
+    unsigned int nextInitMem;
 
     //Se comprueba si hay espacios de memoria libres entre los nodos
     while(next != 0){
-        unsigned int nextInitMem = next->getInitMem();
+        nextInitMem = next->getInitMem();
         if((nextInitMem - prevEndMem) >= pNode->getAmountMem()){
             break;
         }
         else{
             next = next->getNext();
-            nextInitMem = next->getInitMem();
+            //nextInitMem = next->getInitMem();
             current = current->getNext();
             prevEndMem = (current->getInitMem()+current->getAmountMem());
         }
@@ -203,13 +213,13 @@ void MemoryList::remove(MemoryNode *pNode){
         delete pNode;
     }
 
-    else if(_tail = pNode){
+	else if(_tail == pNode){
         pNode->getPrev()->setNext(0);
         _tail = pNode->getPrev();
         delete pNode;
     }
 
-    else{
+	else{
         pNode->getPrev()->setNext(pNode->getNext());
         pNode->getNext()->setPrev(pNode->getPrev());
         delete pNode;
@@ -254,6 +264,25 @@ MemoryNode *MemoryList::find(std::string pID, unsigned int pMemAddress){
 
     else{
         return NULL;
+    }
+}
+
+
+
+/**
+ * @brief Método que imprime información de los nodos
+ *
+ * Imprime la dirreción de memoria donde se comienza el espacio asignado
+ * asi como la cantidad de memoria que se tiene reservada
+ */
+void MemoryList::print(){
+    MemoryNode *tmp = _head;
+    while(tmp != 0){
+        std::cout << "---------------------------------------" << "\n";
+        std::cout << "DIRECCIÓN: " << tmp->getInitMem() << "\n";
+        std::cout << "CANTIDAD: " << tmp->getAmountMem() << "\n";
+        std::cout << "---------------------------------------" << "\n";
+        tmp = tmp->getNext();
     }
 }
 

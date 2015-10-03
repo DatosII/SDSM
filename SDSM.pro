@@ -27,7 +27,11 @@ SOURCES += main.cpp \
     Structures/Lists/linkedlistmd.cpp \
     Structures/Nodes/node_ll.cpp \
     Structures/Nodes/node_md.cpp \
-    dHeap/xmlparser.cpp
+    dHeap/xmlparser.cpp \
+    dHeap/dchar.cpp \
+    dHeap/dint.cpp \
+    dHeap/dobject.cpp \
+    dHeap/d_pointer_size_type.cpp
 
 HEADERS += \
     SDSMMemoryNode/SDSMMemoryNode.h \
@@ -47,6 +51,10 @@ HEADERS += \
     Structures/Lists/linkedlist.h \
     Structures/Lists/linkedlistmd.h \
     Structures/Nodes/node_md.h \
-    dHeap/xmlparser.h
+    dHeap/xmlparser.h \
+    dHeap/dchar.h \
+    dHeap/dint.h \
+    dHeap/dobject.h \
+    dHeap/d_pointer_size_type.h
 
 CONFIG += c++11

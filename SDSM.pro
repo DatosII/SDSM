@@ -21,7 +21,13 @@ SOURCES += main.cpp \
     SDSMMemoryNode/SDSMMemoryNode.cpp \
     Structures/Lists/memorylist.cpp \
     Structures/Nodes/memorynode.cpp \
-    SDSMMemoryNode/servidorsmsmm.cpp
+    SDSMMemoryNode/servidorsmsmm.cpp \
+    dHeap/dheap.cpp \
+    Structures/Lists/linkedlist.cpp \
+    Structures/Lists/linkedlistmd.cpp \
+    Structures/Nodes/node_ll.cpp \
+    Structures/Nodes/node_md.cpp \
+    dHeap/xmlparser.cpp
 
 HEADERS += \
     SDSMMemoryNode/SDSMMemoryNode.h \
@@ -29,7 +35,6 @@ HEADERS += \
     Data_Access/pugixml/pugixml.hpp \
     Data_Access/pugixml/pugiconfig.hpp \
     Structures/Lists/queue.h \
-    Structures/Lists/linkedlist.h \
     Structures/Lists/dlinkedlist.h \
     Structures/Nodes/node_ll.h \
     Structures/Nodes/node_dll.h \
@@ -37,6 +42,11 @@ HEADERS += \
     Structures/Trees/binarytree.h \
     Structures/Lists/memorylist.h \
     Structures/Nodes/memorynode.h \
-    SDSMMemoryNode/servidorsmsmm.h
+    SDSMMemoryNode/servidorsmsmm.h \
+    dHeap/dheap.h \
+    Structures/Lists/linkedlist.h \
+    Structures/Lists/linkedlistmd.h \
+    Structures/Nodes/node_md.h \
+    dHeap/xmlparser.h
 
 CONFIG += c++11

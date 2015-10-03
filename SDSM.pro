@@ -20,7 +20,8 @@ SOURCES += main.cpp \
     Data_Access/pugixml/pugixml.cpp \
     SDSMMemoryNode/SDSMMemoryNode.cpp \
     Structures/Lists/memorylist.cpp \
-    Structures/Nodes/memorynode.cpp
+    Structures/Nodes/memorynode.cpp \
+    SDSMMemoryNode/servidorsmsmm.cpp
 
 HEADERS += \
     SDSMMemoryNode/SDSMMemoryNode.h \
@@ -35,6 +36,7 @@ HEADERS += \
     Structures/Nodes/node_bst.h \
     Structures/Trees/binarytree.h \
     Structures/Lists/memorylist.h \
-    Structures/Nodes/memorynode.h
+    Structures/Nodes/memorynode.h \
+    SDSMMemoryNode/servidorsmsmm.h
 
 CONFIG += c++11

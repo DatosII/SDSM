@@ -18,7 +18,10 @@
 #define BITS 8
 #define DEFAULT_MEM 500
 #define BYTE_STREAM_OFFSET 14
+#define HEX_LEN 2
+#define HEX_255 0xff
 #define NEW_LINE "\n"
+#define HEX_FORMAT "%x"
 #define GB 'G'
 #define MB 'M'
 #define SPLIT ":"
@@ -79,7 +82,7 @@ public:
 	d_pointer_size* setUpPointer(unsigned char  *pByteArray);
 
 	void getIP(unsigned char *pArray); //LLena el array con la dirección ip de la computadora
-	unsigned int getRealDirection(unsigned int pVirtualDirection); //Método que obtiene la dirreción real en memoria
+	unsigned int getRealAddress(unsigned int pVirtualAddress); //Método que obtiene la dirreción real en memoria
 
     
 public:
@@ -89,7 +92,7 @@ public:
 	unsigned char d_free(d_pointer_size *pPointer); //Método que libera la memoria
 	unsigned char* d_get(d_pointer_size *pPointer); //Método que obtiene memoria
 	unsigned char d_set(d_pointer_size *pPointer, unsigned char *pByteStream); //Método que establece memoria
-    char* d_status(); //Método que retorna la cantidad de memoria disponible
+	unsigned char* d_status(); //Método que retorna la cantidad de memoria disponible
 };
 
 #endif // SDSMMEMORYNODE_H

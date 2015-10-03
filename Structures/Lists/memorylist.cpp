@@ -78,7 +78,7 @@ unsigned int *MemoryList::insert(MemoryNode *pNode){
     //No se a reservado ningun espacio
     if(_head == 0){
         _head = _tail = pNode;
-		pNode->setInitMem(0);				// ########## _initMen ===> 0
+		pNode->setMemAddress(0);				// ########## _initMen ===> 0
         _totalNodes++;
         values[0] = 0;
 		values[1] = 0;
@@ -86,14 +86,14 @@ unsigned int *MemoryList::insert(MemoryNode *pNode){
     }
     else{
         //Se comprueba espacio entre la primera reserva y el inicio de la memoria
-		if( ((_head->getInitMem()+_initMem)-_initMem) >= pNode->getAmountMem()){
-			pNode->setInitMem(0);			// ########## _initMen ===> 0
+		if( ((_head->getMemAddress()+_initMem)-_initMem) >= pNode->getAmountMem()){
+			pNode->setMemAddress(0);			// ########## _initMen ===> 0
             _head->setPrev(pNode);
             pNode->setNext(_head);
             _head = pNode;
             _totalNodes++;
             values[0] = 0;
-			values[1] = pNode->getInitMem();			// ########## _initMen ===> pNode->getInitMem();
+			values[1] = pNode->getMemAddress();			// ########## _initMen ===> pNode->getInitMem();
             return values;
         }
         //Se debe buscar espacio, se llama el método auxiliar
@@ -136,12 +136,12 @@ unsigned int *MemoryList::insert(MemoryNode *pNode){
 unsigned int *MemoryList::insertAux(MemoryNode *pNode, unsigned int *pArray){
     MemoryNode *current = _head;
     MemoryNode *next = _head->getNext();
-    unsigned int prevEndMem = (current->getInitMem()+current->getAmountMem());
+    unsigned int prevEndMem = (current->getMemAddress()+current->getAmountMem());
     unsigned int nextInitMem;
 
     //Se comprueba si hay espacios de memoria libres entre los nodos
     while(next != 0){
-        nextInitMem = next->getInitMem();
+        nextInitMem = next->getMemAddress();
         if((nextInitMem - prevEndMem) >= pNode->getAmountMem()){
             break;
         }
@@ -149,20 +149,20 @@ unsigned int *MemoryList::insertAux(MemoryNode *pNode, unsigned int *pArray){
             next = next->getNext();
             //nextInitMem = next->getInitMem();
             current = current->getNext();
-            prevEndMem = (current->getInitMem()+current->getAmountMem());
+            prevEndMem = (current->getMemAddress()+current->getAmountMem());
         }
     }
 
     //Se encontro un espacio libre entre los nodos
     if( next != 0){
-        pNode->setInitMem( (current->getInitMem()+current->getAmountMem()));
+        pNode->setMemAddress( (current->getMemAddress()+current->getAmountMem()));
         pNode->setPrev(current);
         current->setNext(pNode);
         pNode->setNext(next);
         next->setPrev(pNode);
         _totalNodes++;
         pArray[0] = 0;
-        pArray[1] = pNode->getInitMem();
+        pArray[1] = pNode->getMemAddress();
         return pArray;
     }
 
@@ -170,17 +170,17 @@ unsigned int *MemoryList::insertAux(MemoryNode *pNode, unsigned int *pArray){
     //Se comprueba si todavia hay espacio para reservar al final
     else{
         unsigned int endMem = (_initMem+_totalMem);
-        unsigned int tailEndMem = (_tail->getInitMem()+_tail->getAmountMem());
+        unsigned int tailEndMem = (_tail->getMemAddress()+_tail->getAmountMem());
 
         //Hay espacio para reservar al final, se inserta en el tail
         if( (endMem - tailEndMem) >= pNode->getAmountMem()){
-            pNode->setInitMem(tailEndMem);
+            pNode->setMemAddress(tailEndMem);
             pNode->setPrev(_tail);
             _tail->setNext(pNode);
             _tail = pNode;
             _totalNodes++;
             pArray[0] = 0;
-            pArray[1] = pNode->getInitMem();
+            pArray[1] = pNode->getMemAddress();
             return pArray;
         }
 
@@ -248,7 +248,7 @@ MemoryNode *MemoryList::find(std::string pID, unsigned int pMemAddress){
         //Se recorre la lista
         while(temp != 0){
             //Se verifica la dirección de memoria
-            if(temp->getInitMem() == pMemAddress){
+            if(temp->getMemAddress() == pMemAddress){
                 //Se verifica el ID del cliente
                 if(temp->getID() == pID){
                     return temp;
@@ -279,7 +279,7 @@ void MemoryList::print(){
     MemoryNode *tmp = _head;
     while(tmp != 0){
         std::cout << "---------------------------------------" << "\n";
-        std::cout << "DIRECCIÓN: " << tmp->getInitMem() << "\n";
+        std::cout << "DIRECCIÓN: " << tmp->getMemAddress() << "\n";
         std::cout << "CANTIDAD: " << tmp->getAmountMem() << "\n";
         std::cout << "---------------------------------------" << "\n";
         tmp = tmp->getNext();

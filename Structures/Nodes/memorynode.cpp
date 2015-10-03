@@ -100,7 +100,7 @@ void MemoryNode::setFileDescriptor(unsigned int pFD){
  *
  * @return Dirección del espacio en memoria que puede utilizar el cliente
  */
-unsigned int MemoryNode::getInitMem(){
+unsigned int MemoryNode::getMemAddress(){
     return _initMem;
 }
 
@@ -110,7 +110,7 @@ unsigned int MemoryNode::getInitMem(){
  *
  * @param pInitMem Dirección del espacio en memoria que puede utilizar el cliente
  */
-void MemoryNode::setInitMem(unsigned int pInitMem){
+void MemoryNode::setMemAddress(unsigned int pInitMem){
     _initMem = pInitMem;
 }
 

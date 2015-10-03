@@ -34,8 +34,8 @@ public:
     unsigned int getFileDescriptor(); //Método para obtener el file descriptor del cliente
     void setFileDescriptor(unsigned int pFD); // Método que asigna el FD al nodo
 
-    unsigned int getInitMem(); //Método para obtener la posición donde inicia la memoria
-    void setInitMem(unsigned int pInitMem); //Método que asigna el espacio en memoria del nodo
+	unsigned int getMemAddress(); //Método para obtener la posición donde inicia la memoria
+	void setMemAddress(unsigned int pInitMem); //Método que asigna el espacio en memoria del nodo
 
     unsigned int getAmountMem(); //Método para obtener la cantidad de memoria
     void setAmountMem(unsigned int pAmountMem); //Método que asigna el total de memoria almacenada

@@ -4,7 +4,7 @@ int main(){
 
 	unsigned short port = 6000;
 	unsigned short state = 6005;
-	SDSMMemoryNode *node = new SDSMMemoryNode(4,'M', "192.168.1.3", port, state);
+	SDSMMemoryNode *node = new SDSMMemoryNode(5,'G', "192.168.1.3", port, state);
 
 
     std::cout << "MEMORIA TOTAL: " << node->_totalMem << "\n";
@@ -31,7 +31,7 @@ int main(){
 
 
 
-//    node->_memoryList->print();
+	node->_memoryList->print();
 
 	std::cout << "################D_SET####################" << "\n";
 
@@ -39,7 +39,6 @@ int main(){
 	unsigned char *stream4 = array4;
 
 	unsigned char *value4 = node->parser(stream4);
-
 
 
 
@@ -67,11 +66,6 @@ int main(){
 
 
 //	node->_memoryList->print();
-
-
-
-
-
 
     
     return 0;

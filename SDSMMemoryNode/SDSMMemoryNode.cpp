@@ -21,10 +21,10 @@ SDSMMemoryNode::SDSMMemoryNode(const unsigned int pMemory, const char pUnit, con
 
 	else if (pUnit == MB) _totalMem = (pMemory*FACTOR*FACTOR);
 
-    else {
+	else {
 		_totalMem = DEFAULT_MEM;
 		std::cout << UNKNOW_UNIT << NEW_LINE;  std::cout << DEFAULT_MEMORY << NEW_LINE;
-    }
+	}
 
 	this->_ip = pIP;
 	this->getIP(_ipBytes);
@@ -32,7 +32,7 @@ SDSMMemoryNode::SDSMMemoryNode(const unsigned int pMemory, const char pUnit, con
 	this->_statePort = pStatePort;
 	this->_memUsed = 0;
 	this->_initPointer = calloc(1, _totalMem);
-    uintptr_t tmp = reinterpret_cast<uintptr_t>(_initPointer);
+	uintptr_t tmp = reinterpret_cast<uintptr_t>(_initPointer);
 	this->_initDirection = (unsigned int)tmp;
 	this->_memoryList = new MemoryList(_initDirection, _totalMem);
 }
@@ -79,12 +79,10 @@ unsigned char *SDSMMemoryNode::parser(unsigned char *pBuffer){
 		delete pointer;
 		return byteStream;
 	}
-    else if (method == D_STATUS){}
+	else if (method == D_STATUS){
+		return this->d_status();
+	}
 }
-
-
-
-
 
 
 
@@ -108,9 +106,7 @@ unsigned char *SDSMMemoryNode::parser(unsigned char *pBuffer){
  * @return Arreglo de tipo char con los bytes de respuesta
  */
 unsigned char *SDSMMemoryNode::d_calloc(unsigned int pSize){
-
-	//std::cout << "ENTRE " << "\n"; //"#######################################################"
-
+	//Se crea el nodo que almacena la informacion del cliente
     MemoryNode *newNode = new MemoryNode("ID");
     newNode->setFileDescriptor(1);
     newNode->setAmountMem(pSize);
@@ -121,8 +117,6 @@ unsigned char *SDSMMemoryNode::d_calloc(unsigned int pSize){
 
     if(result[0] == 1) delete newNode;
 	else _memUsed+=pSize;
-
-	//std::cout << result[1] << "\n"; //"#######################################################"
 
 	unsigned char *memBytes = this->intToBytes(result[1]);
 	unsigned char *portBytes = this->shortToBytes(_port);
@@ -168,7 +162,7 @@ unsigned char *SDSMMemoryNode::d_calloc(unsigned int pSize){
  *         un 1 si se intento acceder a un espacio de memoria no reservado
  */
 unsigned char SDSMMemoryNode::d_free(d_pointer_size *pPointer){
-	unsigned int realDirection = this->getRealDirection(pPointer->_d_pointer._memDirection);
+	unsigned int realDirection = this->getRealAddress(pPointer->_d_pointer._memDirection);
 	MemoryNode *node = _memoryList->find("ID", pPointer->_d_pointer._memDirection);
 	unsigned char message;
 
@@ -179,7 +173,7 @@ unsigned char SDSMMemoryNode::d_free(d_pointer_size *pPointer){
 			for(int i = 0; i<pPointer->_bytes; i++){// Se recorre la memoria borrando los bytes
 				*tmp = 0;
 				tmp++;
-				node->setInitMem(node->getInitMem()+1);
+				node->setMemAddress(node->getMemAddress()+1);
 			}
 			_memUsed-=pPointer->_bytes;
 			//Si el espacio a borrar es igual al total de memoria reservada, se elimina el nodo
@@ -203,6 +197,7 @@ unsigned char SDSMMemoryNode::d_free(d_pointer_size *pPointer){
 }
 
 
+
 /**
  * @brief Método que guarda los bytes en la memoria previamente reservada
  *
@@ -224,7 +219,7 @@ unsigned char SDSMMemoryNode::d_free(d_pointer_size *pPointer){
  *		   intenta accerder a memoria no reservada
  */
 unsigned char SDSMMemoryNode::d_set(d_pointer_size *pPointer, unsigned char *pByteStream){
-	unsigned int realDirection = this->getRealDirection(pPointer->_d_pointer._memDirection);
+	unsigned int realDirection = this->getRealAddress(pPointer->_d_pointer._memDirection);
 	MemoryNode *node = _memoryList->find("ID", pPointer->_d_pointer._memDirection);
 	unsigned char message;
 
@@ -275,7 +270,7 @@ unsigned char SDSMMemoryNode::d_set(d_pointer_size *pPointer, unsigned char *pBy
  * @return Arreglo de tipo unsigned char con el status y el byteStream obtenido
  */
 unsigned char *SDSMMemoryNode::d_get(d_pointer_size *pPointer){
-	unsigned int realDirection = this->getRealDirection(pPointer->_d_pointer._memDirection);
+	unsigned int realDirection = this->getRealAddress(pPointer->_d_pointer._memDirection);
 	MemoryNode *node = _memoryList->find("ID", pPointer->_d_pointer._memDirection);
 	unsigned int status;
 	unsigned int index;
@@ -304,13 +299,12 @@ unsigned char *SDSMMemoryNode::d_get(d_pointer_size *pPointer){
 		message[0] = 1;
 		return message;
 	}
-
 }
 
 
-char *SDSMMemoryNode::d_status(){
-
+unsigned char *SDSMMemoryNode::d_status(){
 }
+
 
 
 /**
@@ -330,11 +324,11 @@ unsigned char* SDSMMemoryNode::getBytes(std::string pBytes){
 	unsigned char *_bytes = new unsigned char[pBytes.length()/2];
 
 	int posArray = 0;
-	for(unsigned int i = 0; i < pBytes.length(); i+=2){
+	for(unsigned int i = 0; i < pBytes.length(); i+=HEX_LEN){
 		std::string stringByte = pBytes.substr(i, 2);
 		char *charByte = (char*)&stringByte[0u];
 		unsigned int byte;
-		sscanf(charByte, "%x", &byte);
+		sscanf(charByte, HEX_FORMAT, &byte);
 		_bytes[posArray] = (unsigned char)byte;
 		posArray++;
 	}
@@ -359,7 +353,7 @@ unsigned int SDSMMemoryNode::bytesToInt(unsigned char* byteArray, const int& pSt
 	unsigned int newInt = 0;
 	int j = 0;
 	for(int i = pEndIndex; i >= pStartIndex; --i){
-		newInt += (byteArray[i] & 0xFF) << (8*j);
+		newInt += (byteArray[i] & 0xFF) << (BITS*j);
 		++j;
 	}
 
@@ -397,7 +391,7 @@ unsigned char *SDSMMemoryNode::intToBytes(unsigned int &pInt){
  */
 unsigned short SDSMMemoryNode::bytesToShort(unsigned char *byteArray, const int &pStartIndex, const int &pEndIndex){
 
-	return (unsigned short) (((byteArray[pStartIndex] << 8)) | ((byteArray[pEndIndex] & 0xff)));
+	return (unsigned short) (((byteArray[pStartIndex] << BITS)) | ((byteArray[pEndIndex] & HEX_255)));
 }
 
 
@@ -409,9 +403,9 @@ unsigned short SDSMMemoryNode::bytesToShort(unsigned char *byteArray, const int 
  * @return Arreglo con los bytes
  */
 unsigned char *SDSMMemoryNode::shortToBytes(unsigned short pShort){
-	unsigned char *bytes = new unsigned char[2];
+	unsigned char *bytes = new unsigned char[HEX_LEN];
 
-	bytes[0] = (pShort & 0xFF00) >> 8;
+	bytes[0] = (pShort & 0xFF00) >> BITS;
 	bytes[1] = pShort & 0x00FF;
 
 	return bytes;
@@ -437,6 +431,7 @@ void SDSMMemoryNode::getIP(unsigned char *pArray){
 }
 
 
+
 /**
  * @brief Método que obtiene la dirección real en memoria
  *
@@ -447,8 +442,8 @@ void SDSMMemoryNode::getIP(unsigned char *pArray){
  *
  * @return Dirección real en memoria
  */
-unsigned int SDSMMemoryNode::getRealDirection(unsigned int pVirtualDirection){
-	return (_initDirection+pVirtualDirection);
+unsigned int SDSMMemoryNode::getRealAddress(unsigned int pVirtualAddress){
+	return (_initDirection+pVirtualAddress);
 }
 
 

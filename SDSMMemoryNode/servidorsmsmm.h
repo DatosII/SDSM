@@ -1,7 +1,7 @@
 #ifndef SERVIDORSMSMM_H
 #define SERVIDORSMSMM_H
 
-#include <sdsm.h>
+#include "SDSMMemoryNode/SDSMMemoryNode.h"
 #include <string>
 #include <string.h>
 #include <unistd.h>
@@ -21,9 +21,9 @@ using namespace std;
  * hilo la informacion para que pueda atender a cada cliente
  */
 struct parametrosCliente{
-    int socket;
-    pthread_mutex_t mutex;
-    SDSM* sdsm;
+	int socket;
+	pthread_mutex_t mutex;
+	SDSMMemoryNode* sdsm;
 };
 
 /**
@@ -32,16 +32,16 @@ struct parametrosCliente{
  *  cada uno de los clientes le pida guardar.
  */
 class ServidorSMSMM{
-    bool loop =true;
-    parametrosCliente* parametro = new parametrosCliente();
-    int x = 0;
+	bool loop =true;
+	parametrosCliente* parametro = new parametrosCliente();
+	int x = 0;
 
 public:
-    ServidorSMSMM();
-    ~ServidorSMSMM();
+	ServidorSMSMM(const unsigned int pMemory, const char pUnit, const std::string pIP, const unsigned short pPort, const unsigned short pStatePort);
+	~ServidorSMSMM();
 private:
-    static bool timeOut(int  pSocket);
-    void* send_receiveSDS(parametrosCliente* pParametros);
+	static bool timeOut(int  pSocket);
+	void* send_receiveSDS(parametrosCliente* pParametros);
 };
 
 #endif // SERVIDORSMSMM_H

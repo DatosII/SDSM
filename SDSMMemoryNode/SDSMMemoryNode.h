@@ -9,18 +9,21 @@
 #include <cstdlib>
 #include <cstring>
 #include <mutex>
+#include <sstream>
 
 
 #define FACTOR 1024
 #define ZERO 0
 #define LAST_BYTE 3
-#define MAX_INDEX 4
+#define NUM_BYTES_INT 4
 #define BITS 8
 #define DEFAULT_MEM 500
 #define BYTE_STREAM_OFFSET 14
 #define HEX_LEN 2
+#define HEX_BASE 16
 #define HEX_255 0xff
 #define NEW_LINE "\n"
+#define HEX_SPLIT "3a"
 #define HEX_FORMAT "%x"
 #define GB 'G'
 #define MB 'M'
@@ -33,7 +36,6 @@
 #define D_STATUS "d_status"
 #define UNKNOW_UNIT "POR FAVOR INGRESE UNA UNIDAD CORRECTA <G|M>"
 #define DEFAULT_MEMORY "SE RESERVO POR DEFECTO 500 BYTES"
-
 
 
 /**
@@ -60,12 +62,17 @@ struct d_pointer_size{
 };
 
 
+/**
+ * @file SDSMMemoryNode.h
+ * @author Juan Pablo Brenes
+ */
+
 class SDSMMemoryNode{
     
 public:
 	std::mutex _mutex;
 	std::string _ip;
-	unsigned char _ipBytes[4];
+	unsigned char _ipBytes[NUM_BYTES_INT];
     MemoryList *_memoryList; //Lista que almacena los datos de los clientes
     void* _initPointer; //Puntero donde inicia el espacio de memoria a compartir
     unsigned int _initDirection; //Dirección donde inicia el espacio de memoria a compartir
@@ -79,7 +86,9 @@ public:
 	unsigned char *intToBytes(unsigned int &pInt); //Método que obtiene los bytes de un int
 	unsigned short bytesToShort(unsigned char *byteArray, const int &pStartIndex, const int &pEndIndex); //Método que toma los bytes y losconvierte a short
 	unsigned char* shortToBytes(unsigned short pShort); //Método que obtiene los bytes de un short
-	d_pointer_size* setUpPointer(unsigned char  *pByteArray);
+	d_pointer_size* setUpPointer(unsigned char  *pByteArray); //Método que arma la estructora con el buffer del server
+	std::string getMethod(unsigned char *pBuffer); //Método que obtiene el nombre del método a ejecutar.
+	std::string getByteStream(unsigned char *pBuffer); //Método que obtiene los bytes que deben usar los métodos
 
 	void getIP(unsigned char *pArray); //LLena el array con la dirección ip de la computadora
 	unsigned int getRealAddress(unsigned int pVirtualAddress); //Método que obtiene la dirreción real en memoria

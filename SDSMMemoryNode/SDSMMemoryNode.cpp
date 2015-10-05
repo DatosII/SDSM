@@ -39,43 +39,48 @@ SDSMMemoryNode::SDSMMemoryNode(const unsigned int pMemory, const char pUnit, con
 
 
 
+/**
+ * @brief Método que recibe el buffer de bytes del server
+ *
+ * Recibe el buffer de bytes del server y obtiene los parametros para ejecutar
+ * los métodos d_calloc, d_get, d_set, d_free, d_status.
+ *
+ * @param pBuffer Buffer de bytes del server
+ *
+ * @return Mensaje de respuesta al cliente
+ */
 unsigned char *SDSMMemoryNode::parser(unsigned char *pBuffer){
 
-    char *tmp = strtok((char*)pBuffer, SPLIT);
-    std::string method = (std::string)tmp;
-	std::string stringBytes = (std::string)strtok(NULL, SPLIT);
+	//char *tmp = strtok((char*)pBuffer, SPLIT);
+	//std::string method = (std::string)tmp;
+	//std::string stringBytes = (std::string)strtok(NULL, SPLIT);
+	std::string method = this->getMethod(pBuffer);
+	std::string stringBytes = this->getByteStream(pBuffer);
 	unsigned char *_bytes = this->getBytes(stringBytes);
 
     if(method == D_CALLOC){
 		unsigned int *amountMem = (unsigned int*)_bytes;
-		_mutex.lock();
 		unsigned char *status = this->d_calloc(*amountMem); //SE DEBE HACER DELETE DEL VALOR DE RETORNO
-		_mutex.unlock();;
 		delete _bytes;
+		std::cout << "FUNCIONA!!!!!!!!!!!!!!!!!!!!!!!!!!!" << "\n";
 		return  status;
     }
 	else if (method == D_FREE){
 		d_pointer_size *pointer = this->setUpPointer(_bytes);
-		_mutex.lock();
 		unsigned char status = this->d_free(pointer);
-		_mutex.unlock();
 		delete pointer;
 		return (unsigned char*)&status;
     }
 	else if (method == D_SET){
 		d_pointer_size *pointer = this->setUpPointer(_bytes);
 		unsigned char *byteStream = _bytes+BYTE_STREAM_OFFSET;
-		_mutex.lock();
 		unsigned char status = this->d_set(pointer, byteStream);
-		_mutex.unlock();
 		delete pointer;
 		return (unsigned char*)&status;
 	}
 	else if (method == D_GET){
 		d_pointer_size *pointer = this->setUpPointer(_bytes);
-		_mutex.lock();
-		unsigned char *byteStream = this->d_get(pointer);
-		_mutex.unlock();
+		unsigned char *byteStream = this->d_get(pointer); //SE DEBE HACER DELETE DEL VALOR DE RETORNO
 		delete pointer;
 		return byteStream;
 	}
@@ -106,12 +111,15 @@ unsigned char *SDSMMemoryNode::parser(unsigned char *pBuffer){
  * @return Arreglo de tipo char con los bytes de respuesta
  */
 unsigned char *SDSMMemoryNode::d_calloc(unsigned int pSize){
+
 	//Se crea el nodo que almacena la informacion del cliente
     MemoryNode *newNode = new MemoryNode("ID");
     newNode->setFileDescriptor(1);
     newNode->setAmountMem(pSize);
 
+	_mutex.lock();
     unsigned int *result = _memoryList->insert(newNode);
+	_mutex.unlock();
 
 	unsigned char *message = new unsigned char[11];
 
@@ -163,7 +171,9 @@ unsigned char *SDSMMemoryNode::d_calloc(unsigned int pSize){
  */
 unsigned char SDSMMemoryNode::d_free(d_pointer_size *pPointer){
 	unsigned int realDirection = this->getRealAddress(pPointer->_d_pointer._memDirection);
+	_mutex.lock();
 	MemoryNode *node = _memoryList->find("ID", pPointer->_d_pointer._memDirection);
+	_mutex.unlock();
 	unsigned char message;
 
     //La memoria a liberar a sido reservada previamente por el mismo cliente
@@ -178,7 +188,9 @@ unsigned char SDSMMemoryNode::d_free(d_pointer_size *pPointer){
 			_memUsed-=pPointer->_bytes;
 			//Si el espacio a borrar es igual al total de memoria reservada, se elimina el nodo
 			if(node->getAmountMem() == pPointer->_bytes){
+				_mutex.lock();
 				_memoryList->remove(node);
+				_mutex.unlock();
 			}
 			message = 0;
 			return message;
@@ -220,7 +232,9 @@ unsigned char SDSMMemoryNode::d_free(d_pointer_size *pPointer){
  */
 unsigned char SDSMMemoryNode::d_set(d_pointer_size *pPointer, unsigned char *pByteStream){
 	unsigned int realDirection = this->getRealAddress(pPointer->_d_pointer._memDirection);
+	_mutex.lock();
 	MemoryNode *node = _memoryList->find("ID", pPointer->_d_pointer._memDirection);
+	_mutex.unlock();
 	unsigned char message;
 
 	//La memoria a asignar a sido reservada previamente por el mismo cliente
@@ -271,7 +285,9 @@ unsigned char SDSMMemoryNode::d_set(d_pointer_size *pPointer, unsigned char *pBy
  */
 unsigned char *SDSMMemoryNode::d_get(d_pointer_size *pPointer){
 	unsigned int realDirection = this->getRealAddress(pPointer->_d_pointer._memDirection);
+	_mutex.lock();
 	MemoryNode *node = _memoryList->find("ID", pPointer->_d_pointer._memDirection);
+	_mutex.unlock();
 	unsigned int status;
 	unsigned int index;
 
@@ -302,7 +318,28 @@ unsigned char *SDSMMemoryNode::d_get(d_pointer_size *pPointer){
 }
 
 
+
+/**
+ * @brief Método que retonar a los cliente la información sobre el uso de la memoria
+ *
+ * @return Arreglo con la cantidad de memoria total del SDS y la cantidad de memoria
+ *		   que se esta utilizando
+ */
 unsigned char *SDSMMemoryNode::d_status(){
+
+	unsigned char *status = new unsigned char[8];
+	unsigned char *totalMem = this->intToBytes(_totalMem);
+	unsigned char *inUse = this->intToBytes(_memUsed);
+
+	unsigned int index = 0;
+	for(; index < NUM_BYTES_INT; index++){
+		status[index] = totalMem[index];
+	}
+	for(unsigned int index2 = 0; index < 8, index2 < NUM_BYTES_INT; index++, index2++){
+		status[index] = inUse[index2];
+	}
+
+	return status;
 }
 
 
@@ -370,9 +407,9 @@ unsigned int SDSMMemoryNode::bytesToInt(unsigned char* byteArray, const int& pSt
  * @return Puntero a un arreglo con los bytes del numero
  */
 unsigned char *SDSMMemoryNode::intToBytes(unsigned int &pInt){
-	unsigned char *bytes = new unsigned char[MAX_INDEX];
+	unsigned char *bytes = new unsigned char[NUM_BYTES_INT];
 
-	for(int index = ZERO, byte = ZERO; index < MAX_INDEX, byte <= LAST_BYTE; index++, byte++){
+	for(int index = ZERO, byte = ZERO; index < NUM_BYTES_INT, byte <= LAST_BYTE; index++, byte++){
 		bytes[index] = pInt >> (BITS*byte) & 0xFF;
 	}
 	return bytes;
@@ -457,7 +494,7 @@ unsigned int SDSMMemoryNode::getRealAddress(unsigned int pVirtualAddress){
  */
 d_pointer_size *SDSMMemoryNode::setUpPointer(unsigned char *pByteArray){
 	d_pointer_size *pointer = new d_pointer_size;
-	for(int i = 0; i<4; i++){
+	for(int i = 0; i<NUM_BYTES_INT; i++){
 		pointer->_d_pointer._ip[i] = pByteArray[i];
 	}
 	pointer->_d_pointer._port = *((unsigned short*)pByteArray+2);
@@ -465,8 +502,66 @@ d_pointer_size *SDSMMemoryNode::setUpPointer(unsigned char *pByteArray){
 	pointer->_d_pointer._memDirection = *((unsigned int*)tmp+1);
 	pointer->_bytes = *((unsigned int*)tmp+2);
 
-
 	return pointer;
+}
+
+
+
+/**
+ * @brief Método que obtiene el nombre del método que debe ser ejecutado
+ *
+ * Convierte el buffer enviado por el servidor a tipo string en una  variable local,
+ * luego se crea una variable de tipo stringstream, se recorre el string con los bytes
+ * insertando en el stringstream el caracter de cada byte leido, hasta encontrar el byte
+ * "3a" que corresponde el final del nombre del método, luego se obtiene el string con
+ * el nombre, el cual es retornado.
+ *
+ * @param pBuffer Buffer con los bytes recibidos
+ *
+ * @return Nombre del método a ejecutar
+ */
+std::string SDSMMemoryNode::getMethod(unsigned char *pBuffer){
+	std::string tempStr = (char const*)pBuffer;
+	std::stringstream stream;
+	for(unsigned int i=0; i < tempStr.length(); i+=HEX_LEN){
+		std::string stringByte = tempStr.substr(i, HEX_LEN);
+		if(stringByte == HEX_SPLIT) break;
+		char _char = (char) (int)strtol(stringByte.c_str(), NULL, HEX_BASE);
+		stream << _char;
+	}
+	std::string method = stream.str();
+
+	return method;
+}
+
+
+
+/**
+ * @brief Método que obtiene los bytes con los parametros que debe ser usados
+ *
+ * Se obtiene un string del buffer de bytes, el cual se recorre hasta encontrar
+ * el byte "3a" correspondiente al final del nombre del método a ejecutar.
+ * Luego se crea un puntero al indice del arreglo donde comienzan los bytes
+ * parametro, sabiendo ya el indice donde terminan los bytes correspondientes
+ * al nombre del método. Este los bytes a los que apunte este puntero creado
+ * se castean a string y se retornan
+ *
+ * @param pBuffer Buffer con los bytes recibidos
+ *
+ * @return String que contiene los bytes parametro
+ */
+std::string SDSMMemoryNode::getByteStream(unsigned char *pBuffer){
+	std::string tempStr = (char const*)pBuffer;
+	std::stringstream stream;
+	unsigned int i=0;
+	for(; i < tempStr.length(); i+=HEX_LEN){
+		std::string stringByte = tempStr.substr(i, HEX_LEN);
+		if(stringByte == HEX_SPLIT) break;
+	}
+	unsigned char *bytes = pBuffer+(i+HEX_LEN);
+	std::string strBytes = (char const*)bytes;
+
+	return strBytes;
 }
 
 

@@ -51,24 +51,28 @@ SDSMMemoryNode::SDSMMemoryNode(const unsigned int pMemory, const char pUnit, con
  */
 unsigned char *SDSMMemoryNode::parser(unsigned char *pBuffer){
 
-	//char *tmp = strtok((char*)pBuffer, SPLIT);
-	//std::string method = (std::string)tmp;
-	//std::string stringBytes = (std::string)strtok(NULL, SPLIT);
 	std::string method = this->getMethod(pBuffer);
+
+	std::cout << "LLEGO EL MENSAJE: " << method << "\n";
+
 	std::string stringBytes = this->getByteStream(pBuffer);
 	unsigned char *_bytes = this->getBytes(stringBytes);
+
 
     if(method == D_CALLOC){
 		unsigned int *amountMem = (unsigned int*)_bytes;
 		unsigned char *status = this->d_calloc(*amountMem); //SE DEBE HACER DELETE DEL VALOR DE RETORNO
 		delete _bytes;
-		std::cout << "FUNCIONA!!!!!!!!!!!!!!!!!!!!!!!!!!!" << "\n";
+		_memoryList->print();
+		std::cout << "Memoria usada: " << _memUsed << "\n";
 		return  status;
     }
 	else if (method == D_FREE){
 		d_pointer_size *pointer = this->setUpPointer(_bytes);
 		unsigned char status = this->d_free(pointer);
 		delete pointer;
+		_memoryList->print();
+		std::cout << "Memoria usada: " << _memUsed << "\n";
 		return (unsigned char*)&status;
     }
 	else if (method == D_SET){
@@ -86,6 +90,9 @@ unsigned char *SDSMMemoryNode::parser(unsigned char *pBuffer){
 	}
 	else if (method == D_STATUS){
 		return this->d_status();
+	}
+	else{
+		std::cout << "COMANDO DESCONOCIDO" << "\n";
 	}
 }
 
@@ -181,16 +188,15 @@ unsigned char SDSMMemoryNode::d_free(d_pointer_size *pPointer){
 		if(pPointer->_bytes <= node->getAmountMem()){
 			unsigned char *tmp = (unsigned char*)realDirection;
 			for(int i = 0; i<pPointer->_bytes; i++){// Se recorre la memoria borrando los bytes
-				*tmp = 0;
-				tmp++;
+				*(tmp+i) = 0;
 				node->setMemAddress(node->getMemAddress()+1);
 			}
 			_memUsed-=pPointer->_bytes;
 			//Si el espacio a borrar es igual al total de memoria reservada, se elimina el nodo
 			if(node->getAmountMem() == pPointer->_bytes){
-				_mutex.lock();
+				//_mutex.lock();
 				_memoryList->remove(node);
-				_mutex.unlock();
+				//_mutex.unlock();
 			}
 			message = 0;
 			return message;
@@ -241,7 +247,7 @@ unsigned char SDSMMemoryNode::d_set(d_pointer_size *pPointer, unsigned char *pBy
 	if(node != NULL){//Se recorre la memoria guardando los bytes
 		if(pPointer->_bytes <= node->getAmountMem()){
 			unsigned char *tmp = (unsigned char*)realDirection;
-			for(int i = 0; i<pPointer->_bytes; i++){// Se recorre la memoria borrando los bytes
+			for(int i = 0; i<pPointer->_bytes; i++){// Se recorre la memoria guardando los bytes
 				*(tmp+i) = pByteStream[i];
 			}
 			message = 0;

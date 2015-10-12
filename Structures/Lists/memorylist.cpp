@@ -205,24 +205,36 @@ unsigned int *MemoryList::insertAux(MemoryNode *pNode, unsigned int *pArray){
  *
  */
 void MemoryList::remove(MemoryNode *pNode){
-    if(_totalNodes == 0) return;
+	if(_totalNodes == 0){
+		return;
+	}
 
-    if(_head == pNode){
-        pNode->getNext()->setPrev(0);
-        _head = pNode->getNext();
-        delete pNode;
+	if(_head == pNode){
+		if(_totalNodes == 1){
+			delete _head;
+			_head = _tail = NULL;
+		}
+		else{
+			_head = _head->getNext();
+			MemoryNode *tmp = _head->getPrev();
+			_head->setPrev(0);
+			delete tmp;
+		}
+		return;
     }
 
 	else if(_tail == pNode){
         pNode->getPrev()->setNext(0);
         _tail = pNode->getPrev();
         delete pNode;
+		return;
     }
 
 	else{
         pNode->getPrev()->setNext(pNode->getNext());
         pNode->getNext()->setPrev(pNode->getPrev());
         delete pNode;
+		return;
     }
 }
 

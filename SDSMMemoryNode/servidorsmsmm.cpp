@@ -40,8 +40,6 @@ ServidorSMSMM::ServidorSMSMM(const unsigned int pMemory, const char pUnit, const
 			tamano=sizeof(direc);
 			while(loop){
 				servido=accept(clientes,(struct sockaddr *)&direc,&tamano);
-				strcpy(buffer,"Conexion con cliente exitosa");
-				send(servido,buffer,bufSize,0);
 				cout<< "Conexion con el cliente exitosa"<<endl;
 				if(servido<0)
 					cout<<"ERROR en aceptar"<<endl;
@@ -87,7 +85,7 @@ bool ServidorSMSMM::timeOut(int pSocket){
 		retorna un numero*/
 	_result = select(pSocket+1, &_readset, NULL, NULL, &_time);
 
-	cout<<_result<<endl;
+	//cout<<_result<<endl;
 
 	/** Retorna un resultado luego de esperar
 	 *  una cantidad definida de tiempo por el mensaje*/
@@ -116,7 +114,7 @@ void* ServidorSMSMM::send_receiveSDS(parametrosCliente* pParametros){
 	 * recepcion y envio de mensajes, asi como variables de tiempo */
 	int _socket = pParametros->socket;
 	int _bufSize = 1024;
-	char* _buffer=new char[_bufSize];
+	//char* _buffer=new char[_bufSize];
 	bool _loopMensajeria = true;
 	int _initialTime = 0;
 	int _finalTime=0;
@@ -124,14 +122,22 @@ void* ServidorSMSMM::send_receiveSDS(parametrosCliente* pParametros){
 
 	cout << "Hola mundo, yo soy el cliente numero " << _socket << endl;
 
+	unsigned char message[] = D_STATUS;
+	unsigned char *ptr = message;
+	pthread_mutex_lock(&(pParametros->mutex));
+	send(_socket, (char*)pParametros->sdsm->parser(ptr), _bufSize, 0);
+	pthread_mutex_unlock(&(pParametros->mutex));
+
 	_initialTime = time(NULL);
 	_finalTime = time(NULL);
+
+	//send(_socket, "Conectado a servidor",1024, 0);
 
 	/** Ciclo que receibe y envia datos. Tambien Corrobora si la coneccion
 	 * permanece cada cierta cantidad de tiempo  */
 	while (_loopMensajeria){
+		char* _buffer;
 		if(_finalTime-_initialTime>500000000){
-
 			send(_socket, "Estas conectado?",1024, 0);
 
 			if(timeOut(_socket)){
@@ -141,20 +147,25 @@ void* ServidorSMSMM::send_receiveSDS(parametrosCliente* pParametros){
 				_loopMensajeria = false;
 		}
 		else{
+			_buffer =new char[_bufSize];
 			recv(_socket,_buffer,_bufSize,0);
 
-			cout<<_buffer<<endl;
+			//cout<<_buffer<<endl;
 
 			/** Entramos al sdsm por medio de un candado ya que este
 			 * se encuentra compartida en cada uno de los clientes  */
 			pthread_mutex_lock(&(pParametros->mutex));
+			void *temp = (void*)_buffer;
 			send(_socket, (char*)pParametros->sdsm->parser((unsigned char*)_buffer),_bufSize, 0);
 			pthread_mutex_unlock(&(pParametros->mutex));
 
 			_finalTime = time(NULL);
+			delete _buffer;
 		}
-	};
+	}
 }
+
+
 
 /**
  * @brief ServidorSMSMM::~ServidorSMSMM. Destructor general de

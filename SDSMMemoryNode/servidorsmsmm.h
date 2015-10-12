@@ -14,6 +14,8 @@
 #include <iostream>
 #include <time.h>
 
+#define D_STATUS "645f7374617475733a"
+
 using namespace std;
 
 /**

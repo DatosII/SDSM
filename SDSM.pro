@@ -16,45 +16,15 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp \
-    Data_Access/xmlparser.cpp \
-    Data_Access/pugixml/pugixml.cpp \
     SDSMMemoryNode/SDSMMemoryNode.cpp \
     Structures/Lists/memorylist.cpp \
     Structures/Nodes/memorynode.cpp \
-    SDSMMemoryNode/servidorsmsmm.cpp \
-    dHeap/dheap.cpp \
-    Structures/Lists/linkedlist.cpp \
-    Structures/Lists/linkedlistmd.cpp \
-    Structures/Nodes/node_ll.cpp \
-    Structures/Nodes/node_md.cpp \
-    dHeap/xmlparser.cpp \
-    dHeap/dchar.cpp \
-    dHeap/dint.cpp \
-    dHeap/dobject.cpp \
-    dHeap/d_pointer_size_type.cpp
+    SDSMMemoryNode/servidorsmsmm.cpp
 
 HEADERS += \
     SDSMMemoryNode/SDSMMemoryNode.h \
-    Data_Access/xmlparser.h \
-    Data_Access/pugixml/pugixml.hpp \
-    Data_Access/pugixml/pugiconfig.hpp \
-    Structures/Lists/queue.h \
-    Structures/Lists/dlinkedlist.h \
-    Structures/Nodes/node_ll.h \
-    Structures/Nodes/node_dll.h \
-    Structures/Nodes/node_bst.h \
-    Structures/Trees/binarytree.h \
     Structures/Lists/memorylist.h \
     Structures/Nodes/memorynode.h \
-    SDSMMemoryNode/servidorsmsmm.h \
-    dHeap/dheap.h \
-    Structures/Lists/linkedlist.h \
-    Structures/Lists/linkedlistmd.h \
-    Structures/Nodes/node_md.h \
-    dHeap/xmlparser.h \
-    dHeap/dchar.h \
-    dHeap/dint.h \
-    dHeap/dobject.h \
-    dHeap/d_pointer_size_type.h
+    SDSMMemoryNode/servidorsmsmm.h
 
 CONFIG += c++11

@@ -71,7 +71,6 @@ unsigned char *SDSMMemoryNode::parser(unsigned char *pBuffer){
     }
 	else if (method == D_FREE){
 		d_pointer_size *pointer = this->setUpPointer(_bytes);
-
 		unsigned char status = this->d_free(pointer);
 		delete pointer;
 		_memoryList->print();
@@ -147,7 +146,7 @@ unsigned char *SDSMMemoryNode::d_calloc(unsigned int pSize){
 	message[5] = portBytes[0];
 	message[6] = portBytes[1];
 
-	for(int i=0; i<(sizeof(memBytes)); i++){
+	for(int i=0; i<(sizeof(int)); i++){
 		message[i+7] = memBytes[i];
     }
 

@@ -17,14 +17,16 @@
 SDSMMemoryNode::SDSMMemoryNode(const unsigned int pMemory, const char pUnit, const std::string pIP,
 							   const unsigned short pPort, const unsigned short pStatePort){
 
-	if(pUnit == GB) _totalMem = (pMemory*FACTOR*FACTOR*FACTOR);
+//	if(pUnit == GB) _totalMem = (pMemory*FACTOR*FACTOR*FACTOR);
 
-	else if (pUnit == MB) _totalMem = (pMemory*FACTOR*FACTOR);
+//	else if (pUnit == MB) _totalMem = (pMemory*FACTOR*FACTOR);
 
-	else {
-		_totalMem = DEFAULT_MEM;
-		std::cout << UNKNOW_UNIT << NEW_LINE;  std::cout << DEFAULT_MEMORY << NEW_LINE;
-	}
+//	else {
+//		_totalMem = DEFAULT_MEM;
+//		std::cout << UNKNOW_UNIT << NEW_LINE;  std::cout << DEFAULT_MEMORY << NEW_LINE;
+//	}
+
+	_totalMem = 10;
 
 	this->_ip = pIP;
 	this->getIP(_ipBytes);

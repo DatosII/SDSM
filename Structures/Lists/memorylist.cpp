@@ -170,11 +170,11 @@ unsigned int *MemoryList::insertAux(MemoryNode *pNode, unsigned int *pArray){
     //Se comprueba si todavia hay espacio para reservar al final
     else{
         unsigned int endMem = (_initMem+_totalMem);
-        unsigned int tailEndMem = (_tail->getMemAddress()+_tail->getAmountMem());
+		unsigned int tailEndMem = ((_tail->getMemAddress()+_initMem)+_tail->getAmountMem());
 
         //Hay espacio para reservar al final, se inserta en el tail
         if( (endMem - tailEndMem) >= pNode->getAmountMem()){
-            pNode->setMemAddress(tailEndMem);
+			pNode->setMemAddress(tailEndMem-_initMem);
             pNode->setPrev(_tail);
             _tail->setNext(pNode);
             _tail = pNode;

@@ -69,7 +69,7 @@ struct d_pointer_size{
 
 class SDSMMemoryNode{
     
-public:
+private:
 	std::mutex _mutex;
 	std::string _ip;
 	unsigned char _ipBytes[NUM_BYTES_INT];
@@ -77,7 +77,6 @@ public:
     void* _initPointer; //Puntero donde inicia el espacio de memoria a compartir
     unsigned int _initDirection; //Dirección donde inicia el espacio de memoria a compartir
     unsigned int _totalMem; //Tamaño total en bytes de memoria para compartir
-	unsigned int _memUsed; //Cantidad de memoria que se encuentra en uso
 	short _port; //Puerto cliente
 	short _statePort; //Puerto de estado
 
@@ -102,6 +101,9 @@ public:
 	unsigned char* d_get(d_pointer_size *pPointer); //Método que obtiene memoria
 	unsigned char d_set(d_pointer_size *pPointer, unsigned char *pByteStream); //Método que establece memoria
 	unsigned char* d_status(); //Método que retorna la cantidad de memoria disponible
+	unsigned char* getMemUsed(); // Método que retorna la cantidad de memoria utilizada
+
+	unsigned int _memUsed; //Cantidad de memoria que se encuentra en uso
 };
 
 #endif // SDSMMEMORYNODE_H

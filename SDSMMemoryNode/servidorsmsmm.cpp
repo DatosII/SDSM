@@ -70,11 +70,13 @@ void* ServidorSMSMM::servidorVisor(void * arguments){
 	SDSMMemoryNode* sdsmm = ((parametrosVisor*)arguments)->sdsm;
 	int puerto = ((parametrosVisor*)arguments)->puerto;
 	int bufSize = 1024;
-	int clientes;
+	int clientes, pId;
+	int servidor;
 	bool salir=false;
-	unsigned char* mensaje;
+	char* mensaje;
 	/**Ciclo de espera de solicitudes */
 	while (loop){
+
 		//char* buffer=new char[bufSize];
 		struct sockaddr_in direc;
 		socklen_t tamano;
@@ -94,13 +96,30 @@ void* ServidorSMSMM::servidorVisor(void * arguments){
 			listen(clientes,1);
 			tamano=sizeof(direc);
 			while(loop){
-				clientes=accept(clientes,(struct sockaddr *)&direc,&tamano);
-				pthread_mutex_lock(&mutex);
-				mensaje = sdsmm->d_status();
-				pthread_mutex_unlock(&mutex);
-				close(clientes);
+				servidor=accept(clientes,(struct sockaddr *)&direc,&tamano);
+				if(servidor < 0){
+					std::cout << "Conexión con el cliente exitosa" << std::endl;
+				}
+				pId = fork();
+				if(pId != 0){
+					//std::cout<<"Conexion con el visor realizada"<<std::endl;
+
+					while(loop){
+						pthread_mutex_lock(&mutex);
+						//mensaje = (char*)sdsmm->getMemUsed();
+						std::stringstream ss;
+						ss << sdsmm->_memUsed;
+						std::string tmp = ss.str();
+						std::cout<<sdsmm->_memUsed<<std::endl;
+						send(servidor, (char*)&tmp[0u], bufSize, 0);
+						close(servidor);
+						pthread_mutex_unlock(&mutex);
+					}
+					sleep(3);
+				}
 			}
 		}
+		close(clientes);
 	}
 }
 
@@ -203,8 +222,8 @@ void* ServidorSMSMM::send_receiveSDS(parametrosCliente* pParametros){
 			pthread_mutex_lock(&(pParametros->mutex));
 			void *temp = (void*)_buffer;
 			send(_socket, (char*)pParametros->sdsm->parser((unsigned char*)_buffer),_bufSize, 0);
+			std::cout<<pParametros->sdsm->getMemUsed()<<" Este es el print magico"<<std::endl;
 			pthread_mutex_unlock(&(pParametros->mutex));
-
 			_finalTime = time(NULL);
 			delete _buffer;
 		}

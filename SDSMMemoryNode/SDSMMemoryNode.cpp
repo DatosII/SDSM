@@ -574,4 +574,23 @@ std::string SDSMMemoryNode::getByteStream(unsigned char *pBuffer){
 
 
 
+unsigned char* SDSMMemoryNode::getMemUsed(){
+	unsigned char *newBytes = new unsigned char[4];
+
+	unsigned char *bytes = intToBytes(this->_memUsed);
+	for(int i=0; i<4; i++) newBytes[i] = bytes[i];
+
+	unsigned int address = *(unsigned int*)newBytes;
+
+	delete newBytes;
+	std::stringstream ss;
+	ss << address;
+	std::string tmp = ss.str();
+	std::cout << (unsigned char*)&tmp[0u] << std::endl;
+
+	return (unsigned char*)&tmp[0u];
+}
+
+
+
 

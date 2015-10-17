@@ -26,12 +26,15 @@ struct parametrosCliente{
 	int socket;
 	pthread_mutex_t mutex;
 	SDSMMemoryNode* sdsm;
+	unsigned char* mensaje;
+	void* server =this;
 };
 
 struct parametrosVisor{
 	int puerto;
 	pthread_mutex_t mutex;
 	SDSMMemoryNode* sdsm;
+	void* server = this;
 };
 
 
@@ -41,6 +44,7 @@ struct parametrosVisor{
  *  cada uno de los clientes le pida guardar.
  */
 class ServidorSMSMM{
+	unsigned char* mensajeVisor =((unsigned char*)"0");
 	bool loop =true;
 	parametrosCliente* parametro = new parametrosCliente();
 	parametrosVisor* parametrosvisor = new parametrosVisor();
@@ -54,6 +58,7 @@ private:
 	static bool timeOut(int  pSocket);
 	void* send_receiveSDS(parametrosCliente* pParametros);
 	static void* servidorVisor(void*arguments);
+	unsigned char* prueba(parametrosCliente* pParametros);
 };
 
 #endif // SERVIDORSMSMM_H

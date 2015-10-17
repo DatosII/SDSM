@@ -98,7 +98,7 @@ void* ServidorSMSMM::servidorVisor(void * arguments){
 			while(loop){
 				servidor=accept(clientes,(struct sockaddr *)&direc,&tamano);
 				if(servidor < 0){
-					std::cout << "Conexión con el cliente exitosa" << std::endl;
+//					std::cout << "Conexión con el cliente exitosa" << std::endl;
 				}
 				pId = fork();
 				if(pId != 0){

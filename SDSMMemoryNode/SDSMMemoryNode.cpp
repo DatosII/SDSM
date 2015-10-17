@@ -69,6 +69,7 @@ unsigned char *SDSMMemoryNode::parser(unsigned char *pBuffer){
     }
 	else if (method == D_FREE){
 		d_pointer_size *pointer = this->setUpPointer(_bytes);
+
 		unsigned char status = this->d_free(pointer);
 		delete pointer;
 		_memoryList->print();

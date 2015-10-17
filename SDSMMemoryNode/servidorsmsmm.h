@@ -28,6 +28,13 @@ struct parametrosCliente{
 	SDSMMemoryNode* sdsm;
 };
 
+struct parametrosVisor{
+	int puerto;
+	pthread_mutex_t mutex;
+	SDSMMemoryNode* sdsm;
+};
+
+
 /**
  * @brief The ServidorSMSMM class. Clase que recibira solicitudes atendera
  *  cada uno de los clientes y almacenara un nodo con la informacion que
@@ -36,7 +43,9 @@ struct parametrosCliente{
 class ServidorSMSMM{
 	bool loop =true;
 	parametrosCliente* parametro = new parametrosCliente();
+	parametrosVisor* parametrosvisor = new parametrosVisor();
 	int x = 0;
+	pthread_t threadVisor;
 
 public:
 	ServidorSMSMM(const unsigned int pMemory, const char pUnit, const std::string pIP, const unsigned short pPort, const unsigned short pStatePort);
@@ -44,6 +53,7 @@ public:
 private:
 	static bool timeOut(int  pSocket);
 	void* send_receiveSDS(parametrosCliente* pParametros);
+	static void* servidorVisor(void*arguments);
 };
 
 #endif // SERVIDORSMSMM_H

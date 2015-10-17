@@ -213,12 +213,14 @@ void MemoryList::remove(MemoryNode *pNode){
 		if(_totalNodes == 1){
 			delete _head;
 			_head = _tail = NULL;
+			_totalNodes--;
 		}
 		else{
 			_head = _head->getNext();
 			MemoryNode *tmp = _head->getPrev();
 			_head->setPrev(0);
 			delete tmp;
+			_totalNodes--;
 		}
 		return;
     }
@@ -227,6 +229,7 @@ void MemoryList::remove(MemoryNode *pNode){
         pNode->getPrev()->setNext(0);
         _tail = pNode->getPrev();
         delete pNode;
+		_totalNodes--;
 		return;
     }
 
@@ -234,6 +237,7 @@ void MemoryList::remove(MemoryNode *pNode){
         pNode->getPrev()->setNext(pNode->getNext());
         pNode->getNext()->setPrev(pNode->getPrev());
         delete pNode;
+		_totalNodes--;
 		return;
     }
 }

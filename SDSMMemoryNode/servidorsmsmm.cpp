@@ -14,6 +14,12 @@ ServidorSMSMM::ServidorSMSMM(const unsigned int pMemory, const char pUnit, const
 	parametro->mutex = PTHREAD_MUTEX_INITIALIZER;
 	parametro->sdsm = new SDSMMemoryNode(pMemory, pUnit, pIP, pPort, pStatePort);
 
+	parametrosvisor->mutex = parametro->mutex;
+	parametrosvisor->sdsm = parametro->sdsm;
+	parametrosvisor->puerto = pStatePort;
+
+	pthread_create(&threadVisor,NULL,servidorVisor,parametrosvisor);
+
 	/**Ciclo de espera de solicitudes */
 	while (loop){
 		int puerto = (int)pPort;
@@ -55,6 +61,46 @@ ServidorSMSMM::ServidorSMSMM(const unsigned int pMemory, const char pUnit, const
 			}
 		}
 		close(clientes);
+	}
+}
+
+void* ServidorSMSMM::servidorVisor(void * arguments){
+	bool loop = true;
+	pthread_mutex_t mutex= ((parametrosVisor*)arguments)->mutex;
+	SDSMMemoryNode* sdsmm = ((parametrosVisor*)arguments)->sdsm;
+	int puerto = ((parametrosVisor*)arguments)->puerto;
+	int bufSize = 1024;
+	int clientes;
+	bool salir=false;
+	unsigned char* mensaje;
+	/**Ciclo de espera de solicitudes */
+	while (loop){
+		//char* buffer=new char[bufSize];
+		struct sockaddr_in direc;
+		socklen_t tamano;
+		if ((clientes=socket(AF_INET,SOCK_STREAM,0))<0){
+			std::cout<<"Se presento un error al crear el socket"<<std::endl;
+			exit(1);
+		}
+		std::cout<<"Servidor Visor ha sido creado"<<std::endl;
+		direc.sin_family=AF_INET;
+		direc.sin_addr.s_addr=htons(INADDR_ANY);
+		direc.sin_port=htons(puerto);
+		if ((bind(clientes,(struct sockaddr*)&direc,sizeof(direc)))<0){
+			cout<<"Error en la conexion por Bind"<<endl;
+		}
+		else{
+			cout<<"Conecte el Visor...../..\../..\../..\....."<<endl;
+			listen(clientes,1);
+			tamano=sizeof(direc);
+			while(loop){
+				clientes=accept(clientes,(struct sockaddr *)&direc,&tamano);
+				pthread_mutex_lock(&mutex);
+				mensaje = sdsmm->d_status();
+				pthread_mutex_unlock(&mutex);
+				close(clientes);
+			}
+		}
 	}
 }
 

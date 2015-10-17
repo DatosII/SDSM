@@ -110,7 +110,6 @@ void* ServidorSMSMM::servidorVisor(void * arguments){
 						std::stringstream ss;
 						ss << sdsmm->_memUsed;
 						std::string tmp = ss.str();
-						std::cout<<sdsmm->_memUsed<<std::endl;
 						send(servidor, (char*)&tmp[0u], bufSize, 0);
 						close(servidor);
 						pthread_mutex_unlock(&mutex);

@@ -222,7 +222,6 @@ void* ServidorSMSMM::send_receiveSDS(parametrosCliente* pParametros){
 			pthread_mutex_lock(&(pParametros->mutex));
 			void *temp = (void*)_buffer;
 			send(_socket, (char*)pParametros->sdsm->parser((unsigned char*)_buffer),_bufSize, 0);
-			std::cout<<pParametros->sdsm->getMemUsed()<<" Este es el print magico"<<std::endl;
 			pthread_mutex_unlock(&(pParametros->mutex));
 			_finalTime = time(NULL);
 			delete _buffer;
